@@ -86,6 +86,7 @@ export const SankeyPanel: React.FC<Props> = ({ options, data, width, height }) =
       .colorScheme(options.colorScheme)
       .displayValues(options.displayValues)
       .highlightOnHover(options.highlightOnHover)
+      .colorArray(options.colorArray)
       .data(graph)
 
     try {

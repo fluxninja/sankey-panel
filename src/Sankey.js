@@ -24,15 +24,16 @@ export class Sankey {
     this._marginBottom = 20;
     this._marginLeft = 20;
 
-    this._background = '#f8f8fa';
+    this._background = 'rgba(0, 0, 0, 0)';
     this._edgeColor = 'path';
     this._colorScheme = 'Tableau10';
     this._colorScale = null;
+    this._colorArray = '';
 
     this._sankeyAlignType = 'Justify';
     this._sankeyAlign = null;
     this._sankeyGenerator = null;
-    this._sankeyNodeWith = 15;
+    this._sankeyNodeWith = 85;
     this._sankeyNodePadding = 20;
 
     this._svgNode = null;
@@ -201,13 +202,16 @@ export class Sankey {
     let label = currentNode.name;
     switch (this._displayValues) {
       case DISPLAY_VALUES.total:
-        label = `${label}: ${nodeValue}`;
+        label = `${label}
+        ${nodeValue}`;
         break;
       case DISPLAY_VALUES.percentage:
-        label = `${label}: ${nodePercent}`;
+        label = `${label}
+        ${nodePercent}`;
         break;
       case DISPLAY_VALUES.both:
-        label = `${label}: ${nodePercent} - ${nodeValue}`;
+        label = `${label}
+        ${nodePercent} - ${nodeValue}`;
         break;
       default:
         break;
@@ -233,14 +237,27 @@ export class Sankey {
       .data(this._nodes, node => node.name)
       .join('rect')
         .attr('class', 'sankey-node')
+        .attr('id', d => d.name)
         .attr('x', d => d.x0)
         .attr('y', d => d.y0)
         .attr('rx', 2)
         .attr('ry', 2)
         .attr('height', d => d.y1 - d.y0)
         .attr('width', d => d.x1 - d.x0)
-        .attr('stroke', d => d3.color(this._color(d)).darker(0.5))
-        .attr('fill', d => this._color(d))
+        .attr('stroke', d => {
+          const colorArray = JSON.parse(this._colorArray);
+          if (Object.keys(colorArray).includes(d.name)) {
+            return colorArray[d.name];
+          }
+          return "rgba(148, 153, 168, 1)";
+        })
+        .attr('fill', d => {
+          const colorArray = JSON.parse(this._colorArray);
+          if (Object.keys(colorArray).includes(d.name)) {
+            return colorArray[d.name];
+          }
+          return "rgba(148, 153, 168, 1)";
+        })
         .on('mouseover', d => this._highlightOnHover && this._showLinks(d))
         .on('mouseout', _ => this._highlightOnHover && this._showAll());
 
@@ -260,7 +277,7 @@ export class Sankey {
       .append('path')
         .attr('class', 'sankey-link')
         .attr('d', d3Sankey.sankeyLinkHorizontal())
-        .attr('stroke', d => this._setLinkStroke(d))
+        .attr('stroke', "rgba(182, 185, 196, 1)")
         .attr('stroke-width', d => Math.max(1, d.width));    
 
     // LABELS
@@ -271,11 +288,26 @@ export class Sankey {
       .selectAll('text')
       .data(this._nodes)
       .join('text')
-        .attr('x', d => (d.x0 < this._width / 2 ? d.x1 + 6 : d.x0 - 6))
+        .attr('x', d => d.x0 + 8)
         .attr('y', d => (d.y1 + d.y0) / 2)
         .attr('dy', '0.35em')
-        .attr('text-anchor', d => (d.x0 < this._width / 2 ? 'start' : 'end'))
+        //.attr('text-anchor', d => (d.x0 < this._width / 2 ? 'start' : 'end'))
         .text(d => this._labelNode(d));
+
+      this._gBound
+        .append('g')
+          .attr('font-family', 'sans-serif')
+          .attr('font-size', 10)
+        .selectAll('text')
+        .data(this._nodes)
+        .join('text')
+        .attr('x', d => d.x0 + 8)
+          .attr('font-size', 14)
+          .attr('font-weight', '700')
+          .attr('y', d => ((d.y1 + d.y0) / 2) + 16)
+          .attr('dy', '0.35em')
+          //.attr('text-anchor', d => (d.x0 < this._width / 2 ? 'start' : 'end'))
+          .text(d => this._formatValue(d.value));
 
     this._svgNode
       .append('title')
@@ -309,6 +341,10 @@ export class Sankey {
 
   colorScheme(_) {
     return arguments.length ? (this._colorScheme = _, this) : this._colorScheme;
+  }
+
+  colorArray(_) {
+    return arguments.length ? (this._colorArray = _, this) : this._colorArray;
   }
 
   edgeColor(_) {

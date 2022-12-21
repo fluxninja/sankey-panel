@@ -29,6 +29,11 @@ export const plugin = new PanelPlugin<SankeyOptions>(SankeyPanel).setPanelOption
         ],
       },
     })
+    .addTextInput({
+      path: 'colorArray',
+      name: 'Color Object',
+      defaultValue: '',
+    })
     .addSelect({
       path: 'colorScheme',
       name: 'Color',
