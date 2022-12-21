@@ -1,8 +1,8 @@
 import { PanelPlugin } from '@grafana/data';
-import { SankeyOptions } from './types';
-import { SankeyPanel } from './SankeyPanel';
+import { SankeyOptionsFn } from 'types-fn';
+import { SankeyPanelFn as SankeyPanel } from './SankeyPanelFn';
 
-export const plugin = new PanelPlugin<SankeyOptions>(SankeyPanel).setPanelOptions((builder) => {
+export const plugin = new PanelPlugin<SankeyOptionsFn>(SankeyPanel).setPanelOptions((builder) => {
   return builder
     .addSelect({
       path: 'align',
