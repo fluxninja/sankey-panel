@@ -91,8 +91,8 @@ export class Sankey {
       links: this._data.links.map(d => Object.assign({}, d))
     });
 
-    this._nodes = sankeyData.nodes;
-    this._links = sankeyData.links;
+    this._nodes = sankeyData.nodes.filter(d => d.value !== 0);
+    this._links = sankeyData.links.filter(d => d.value !== 0);
   }
 
   // ----------------------------   VALIDATIONS   -----------------------------
