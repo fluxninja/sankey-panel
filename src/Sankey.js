@@ -33,7 +33,7 @@ export class Sankey {
     this._sankeyAlignType = 'Justify';
     this._sankeyAlign = null;
     this._sankeyGenerator = null;
-    this._sankeyNodeWith = 85;
+    this._sankeyNodeWith = 110;
     this._sankeyNodePadding = 20;
 
     this._svgNode = null;
@@ -193,25 +193,22 @@ export class Sankey {
   _formatPercent(percent)  { return d3.format('.2~%')(percent); }
   _formatThousand(value) { return d3.format('.3~s')(value); }
 
-  _labelNode(currentNode) {
+  _labelNodeValue(currentNode) {
     const nodesAtDepth = this._nodes.filter(node => node.depth === currentNode.depth);
     const totalAtDepth = d3.sum(nodesAtDepth, node => node.value);
     const nodeValue = this._formatThousand(currentNode.value);
     const nodePercent = this._formatPercent(currentNode.value / totalAtDepth);
 
-    let label = currentNode.name;
+    let label = '';
     switch (this._displayValues) {
       case DISPLAY_VALUES.total:
-        label = `${label}
-        ${nodeValue}`;
+        label = `${nodeValue}`;
         break;
       case DISPLAY_VALUES.percentage:
-        label = `${label}
-        ${nodePercent}`;
+        label = `${nodePercent}`;
         break;
       case DISPLAY_VALUES.both:
-        label = `${label}
-        ${nodePercent} - ${nodeValue}`;
+        label = `${nodePercent} - ${nodeValue}`;
         break;
       default:
         break;
@@ -291,8 +288,7 @@ export class Sankey {
         .attr('x', d => d.x0 + 8)
         .attr('y', d => (d.y1 + d.y0) / 2)
         .attr('dy', '0.35em')
-        //.attr('text-anchor', d => (d.x0 < this._width / 2 ? 'start' : 'end'))
-        .text(d => this._labelNode(d));
+        .text(d => d.name);
 
       this._gBound
         .append('g')
@@ -306,8 +302,7 @@ export class Sankey {
           .attr('font-weight', '700')
           .attr('y', d => ((d.y1 + d.y0) / 2) + 16)
           .attr('dy', '0.35em')
-          //.attr('text-anchor', d => (d.x0 < this._width / 2 ? 'start' : 'end'))
-          .text(d => this._formatValue(d.value));
+          .text(d => this._labelNodeValue(d));
 
     this._svgNode
       .append('title')
