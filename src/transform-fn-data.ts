@@ -1,5 +1,6 @@
 // NOTE: implementation of toDataFrame: https://github.com/grafana/grafana/blob/main/packages/grafana-data/src/dataframe/processDataFrame.ts
 import { toDataFrame, FieldType, ArrayVector, Field } from '@grafana/data';
+import { logger } from 'fn-logger';
 
 import { SankeyOptionsFn } from 'types-fn';
 
@@ -33,16 +34,31 @@ function mapField<P>() {
     const values = isArrayVector ? field.values.toArray() : isArray ? field.values : null;
 
     if (values === null) {
-      return field;
+      logger.warn('[FN] Failed to transform sankey data.', 'Values are not an array.');
+
+      return {
+        ...field,
+        values: new ArrayVector([]),
+      };
     }
 
     const parsedValues = isSankeyField ? ((values as P[]).map(splitValue())[0] as unknown[]).map(mapToNumber()) : null;
 
-    return {
-      ...field,
-      type: parsedValues?.every(isNumber()) ? FieldType.number : field.type,
-      values: parsedValues ? new ArrayVector(parsedValues) : values,
-    };
+    try {
+      return {
+        ...field,
+        type: parsedValues?.every(isNumber()) ? FieldType.number : field.type,
+        values: parsedValues ? new ArrayVector(JSON.parse(JSON.stringify(parsedValues))) : values,
+      };
+    } catch (err) {
+      logger.warn('[FN] Failed to transform sankey data.', err instanceof Error ? err.message : String(err));
+
+      return {
+        ...field,
+        type: field.type,
+        values: new ArrayVector([]),
+      };
+    }
   };
 }
 
