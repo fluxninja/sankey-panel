@@ -5,6 +5,7 @@ import { PanelProps } from '@grafana/data';
 import { SankeyOptions } from 'types';
 import { Sankey } from 'Sankey'
 import { ErrorMessage } from 'Error'
+import { logger } from 'fn-logger';
 
 interface Props extends PanelProps<SankeyOptions> {}
 
@@ -21,6 +22,10 @@ export const SankeyPanel: React.FC<Props> = ({ options, data, width, height }) =
   const [ graph, setGraph ] = useState({ nodes: [], links: [] })
 
   useEffect(() => {
+    if (data.error) {
+      logger.warn('[FN] Sankey data error.',{data, error: data.error})
+    }
+
     data.error
     ?
       setError({isError: true, message: data.error.message})
@@ -66,9 +71,9 @@ export const SankeyPanel: React.FC<Props> = ({ options, data, width, height }) =
 
     const isValid = validate(sources, targets, values);
     if (!isValid) {return}
-  
+
     const zip = d3.zip(sources, targets, values);
-  
+
     const nodes = Array.from(new Set(sources.concat(targets))).map(node => ({ name: node }));
     const links = zip.map(d => ({ source: d[0], target: d[1], value: +d[2].toFixed(2) }));
     const graph = { nodes, links };
@@ -92,6 +97,8 @@ export const SankeyPanel: React.FC<Props> = ({ options, data, width, height }) =
     try {
       sankey.render();
     } catch (renderError) {
+      logger.warn('[FN] Sankey render error.',{renderError, graph})
+
       setError({isError: true, message: renderError.message})
     }
   };
