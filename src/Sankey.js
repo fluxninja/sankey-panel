@@ -255,7 +255,7 @@ export class Sankey {
           }
           return "rgba(148, 153, 168, 1)";
         })
-        .on('mouseover', d => this._highlightOnHover && this._showLinks(d))
+        .on('mouseover', d => this._highlightOnHover && this._showLinks(d.target?.__data__))
         .on('mouseout', _ => this._highlightOnHover && this._showAll());
 
     // LINKS
